@@ -48,6 +48,7 @@ GameState.prototype.create = function() {
 }
 
 GameState.prototype.update = function() {
+    this.game.physics.collide(textGroup, blimpGroup);
     //This method is called every frame.
     //We're not doing anything but updating the fps here.
     if (this.game.time.fps !== 0) {
@@ -119,62 +120,6 @@ var Letter = function(game) {
     this.inputEnabled = true;
 
     this.input.enableDrag();
-}
-
-GameState.prototype.addNewLetter = function() {
-  /*
-  var myletter = this.game.add.text(Math.random()*stageSize.width, Math.random()*stageSize.height, Math.random().toString(36).toString(36).replace(/[^a-z]+/g, '').substring(0, 1), { font: '16px Arial', fill: '#ffffff' });
-
-  myletter.enableBody = true;
-  //Again, enable physics and set velocity
-  myletter.speed = -150-Math.random()*150;
-
-  //Set a scale between 1 and 1.5 for some random sizes
-  myletter.scale.setTo(1+Math.random()*2);
-  myletter.anchor.setTo(0.5, 0.5);
-
-  //This handy event lets us check if the blimp is completely off screen. If it is, we call blimpOutOfBounds, and get rid of it.
-  myletter.checkWorldBounds = true;
-  myletter.events.onOutOfBounds.add(letterOutOfBounds, myletter);
-
-  //Whether the blimp has been hit by the player yet.
-  myletter.hit = false;
-  myletter.interactive = true;
-  myletter.vy = 1;
-  myletter.ay = 1.5;
-	this.textGroup.add(myletter);
-    */
-    //var myletter = new Phaser.BitmapText(this.game, 12, 12, "A", { font: '16px Arial', fill: '#ffffff' });
-    //var myletter = new Phaser.Text(this.game, Math.random()*stageSize.width, Math.random()*stageSize.height, Math.random().toString(36).toString(36).replace(/[^a-z]+/g, '').substring(0, 1), { font: '16px Arial', fill: '#ffffff' });
-    //var textSprite = this.game.add.sprite( 100, 500, myletter );
-    //this.textGroup.add(textSprite);
-  /*
-  myletter.enableBody = true;
-  //Again, enable physics and set velocity
-  myletter.speed = -150-Math.random()*150;
-
-  //Set a scale between 1 and 1.5 for some random sizes
-  myletter.scale.setTo(1+Math.random()*2);
-  myletter.anchor.setTo(0.5, 0.5);
-
-  //This handy event lets us check if the blimp is completely off screen. If it is, we call blimpOutOfBounds, and get rid of it.
-  myletter.checkWorldBounds = true;
-  myletter.events.onOutOfBounds.add(letterOutOfBounds, myletter);
-
-  //Whether the blimp has been hit by the player yet.
-  myletter.hit = false;
-  myletter.interactive = true;
-  myletter.vy = 1;
-  myletter.ay = 1.5;
-  var textSprite = this.game.add.sprite( 100, 500, myletter );
-    this.textGroup.add(textSprite);
-    */
-
-    //var bmpText = this.game.add.bitmapText(10, 100, 'carrier_command','Drag me around !',10);
-
-    //bmpText.inputEnabled = true;
-
-    //bmpText.input.enableDrag();
 }
 
 function letterOutOfBounds(letter) {
