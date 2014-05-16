@@ -139,18 +139,21 @@ var Letter = function(game, player) {
     Phaser.Sprite.call(this, game, x, y, 'letter');
 
     this.player = player;
-    this.character = this.game.add.text(x-10, y, letter, { fontSize: '32px', fill: '#000' });
+    this.character = this.game.add.text(x-10, y-100, letter, { fontSize: '32px', fill: '#000' });
 
     //Again, enable physics and set velocity
     this.game.physics.enable(this, Phaser.Physics.ARCADE);
     this.body.allowGravity = false;
     this.body.gravity.setTo(0);
-    this.body.velocity.x = -100;
+    var adj = Math.random()*2.5;
+    this.body.velocity.x = -100*adj;
     this.alpha = 0;
     //this.body.velocity.setTo(this.speed, 0);
 
     //Set a scale between 1 and 1.5 for some random sizes
     this.letter = letter;
+    this.character.scale.setTo(adj);
+    this.character.y = -50;
     this.scale.setTo(.2);
     this.anchor.setTo(0.5, 0.5);
 
@@ -167,6 +170,7 @@ function letterOutOfBounds(letter) {
 }
 
 function blimpOutOfBounds(blimp){
+    blimp.character.destroy();
     blimp.kill();
 }
 
