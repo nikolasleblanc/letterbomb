@@ -55,17 +55,6 @@ GameState.prototype.create = function() {
         console.log(myLetter.letter);
         this.textGroup.add(myLetter);
     }, this);
-
-
-    /*
-    this.blimpGroup = game.add.group();
-	this.blimpTimer = game.time.events.loop(Phaser.Timer.SECOND*2.5, function(){
-	    var blimp = this.game.add.existing(
-	        new Blimp(this, this.player)
-	    );
-	    this.blimpGroup.add(blimp);
-	}, this);
-*/
 }
 
 GameState.prototype.update = function() {
@@ -104,128 +93,85 @@ var Player = function(game, x, y, target){
 	this.easer = .5;
 }
 
-var Blimp = function(game, player){
-
-    //Give the blimp an x offscreen, a random y, and a speed between -150 and -250
-    var x = stageSize.width+200;
-    var y = Math.random()*stageSize.height;
-    this.speed = -250-Math.random()*150;
-    this.player = player;
-
-    //Create a sprite with the blimp graphic
-    Phaser.Sprite.call(this, game, x, y, 'blimp');
-
-    //Again, enable physics and set velocity
-    this.game.physics.enable(this, Phaser.Physics.ARCADE);
-    this.body.velocity.setTo(this.speed, 0);
-
-    //Set a scale between 1 and 1.5 for some random sizes
-    this.scale.setTo(1+Math.random()*3);
-    this.anchor.setTo(0.5, 0.5);
-
-    //This handy event lets us check if the blimp is completely off screen. If it is, we call blimpOutOfBounds, and get rid of it.
-    this.checkWorldBounds = true;
-    this.events.onOutOfBounds.add(blimpOutOfBounds, this);
-
-    //Whether the blimp has been hit by the player yet.
-    this.hit = false;
-}
-
 var Letter = function(game, player) {
+    // Set a location just off stage to spawn the letter
     var x = stageSize.width + 25;
     var y = Math.random()*stageSize.height;
+
+    // Randomly select the letter of the alphabet
     var letter = Math.random().toString(36).toString(36).replace(/[^a-z]+/g, '').substring(0, 1).toUpperCase();
 
+    // Spawn the container
     Phaser.Sprite.call(this, game, x, y, 'letter');
 
+    // Store a reference to the player object
     this.player = player;
-    this.character = this.game.add.text(x-10, y-100, letter, { fontSize: '32px', fill: '#000' });
 
-    //Again, enable physics and set velocity
+    // Add a text object to the "container" object (this will contain the letter)
+    this.character = this.game.add.text(x, y, letter, { fontSize: '32px', fill: '#000' });
+
+    // Enable physics on the container and set velocity
     this.game.physics.enable(this, Phaser.Physics.ARCADE);
     this.body.allowGravity = false;
     this.body.gravity.setTo(0);
+
+    // Set a randomized number for scale and velocity of the letter (parallax)
     var adj = Math.random()*2.5;
     this.body.velocity.x = -100*adj;
+
+    // Hide the container
     this.alpha = 0;
-    //this.body.velocity.setTo(this.speed, 0);
+
+    // Resize container to exact size of letter (collision detection)
+    this.width = this.character.width;
+    this.height = this.character.height;
+
+    // Store a reference to the letter the container holds
+    this.letter = letter;
 
     //Set a scale between 1 and 1.5 for some random sizes
-    this.letter = letter;
     this.character.scale.setTo(adj);
-    this.character.y = -50;
-    this.scale.setTo(.2);
-    this.anchor.setTo(0.5, 0.5);
 
-    //This handy event lets us check if the blimp is completely off screen. If it is, we call blimpOutOfBounds, and get rid of it.
+    // If the character is out of bounds, kill it
     this.checkWorldBounds = true;
-    this.events.onOutOfBounds.add(blimpOutOfBounds, this);
+    this.events.onOutOfBounds.add(letterOutOfBounds, this);
 
     //Whether the blimp has been hit by the player yet.
     this.hit = false;
 }
 
-function letterOutOfBounds(letter) {
-	letter.kill();
-}
-
-function blimpOutOfBounds(blimp){
-    blimp.character.destroy();
-    blimp.kill();
+function letterOutOfBounds(letter){
+    letter.character.destroy();
+    letter.kill();
 }
 
 Letter.prototype = Object.create(Phaser.Sprite.prototype);
 Letter.prototype.constructor = Letter;
 
-Blimp.prototype = Object.create(Phaser.Sprite.prototype);
-Blimp.prototype.constructor = Blimp;
-
-Blimp.prototype.update = function(){
-
-    //As a simple form of hit detection (Phaser also supports pixel perfect HD, but i'll keep it simple) we'll detect the bounds and see if they intersect.
-    var boundsA = this.player.getBounds();
-    var boundsB = this.getBounds();
-
-    //If the bounds intersect and it's not already hit.
-    if(Phaser.Rectangle.intersects(boundsA, boundsB) && !this.hit){
-        this.hit = true;
-
-        //Detract 20 from the players health and set the alpha to represent it.
-        this.player.health -= 20;
-        this.player.alpha = this.player.health/100;
-
-        //Change the velocity to a downwards fall
-        this.body.velocity.setTo(this.body.velocity.x/2, 100);
-
-        //Phaser also lets you use Tweens to easily smooth movement. Here i've smoothly rotated downwards to give the impression of falling.
-        game.add.tween(this)
-        .to({rotation: -Math.PI/8}, 300, Phaser.Easing.Linear.In)
-        .start();
-    }
-}
-
-
-
 Letter.prototype.update = function(){
 
-    //As a simple form of hit detection (Phaser also supports pixel perfect HD, but i'll keep it simple) we'll detect the bounds and see if they intersect.
+    // Get bounds for collision detection (why we needed a player reference)
     var boundsA = this.player.getBounds();
     var boundsB = this.getBounds();
 
-    //If the bounds intersect and it's not already hit.
+    // If the bounds intersect and it's not already hit.
     if(Phaser.Rectangle.intersects(boundsA, boundsB) && !this.hit){
+        // Update the collected word
         score += this.letter;
         scoreText.setText('Word: ' + score);
+
+        // Destroy the letter
         this.hit = true;
         this.character.destroy();
         this.kill();
     }
 
-  this.character.x = this.x-10;
-  this.character.y = this.y+10;
+    // Position the character with the letter
+    this.character.x = this.x + this.width/2 - this.character.width/2;
+    this.character.y = this.y + this.height/2 - this.character.height/2;
 }
 
-//We give our player a type of Phaser.Sprite and assign it's constructor method.
+// We give our player a type of Phaser.Sprite and assign it's constructor method.
 Player.prototype = Object.create(Phaser.Sprite.prototype);
 Player.prototype.constructor = Player;
 
