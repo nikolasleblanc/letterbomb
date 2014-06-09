@@ -8,34 +8,36 @@ GameState.prototype.preload = function() {
     this.game.load.image('player', 'assets/plane.png');
     this.game.load.image('letter', 'assets/plane.png');
     this.game.load.image('blimp', 'assets/blimp.png');
+    this.game.load.image('cloud', 'assets/cloud.png');
 
 };
 
 GameState.prototype.create = function() {
     //This is called immediately after preloading.
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
-
     this.game.world.setBounds(0, 0, 2400, 500);
-
     this.game.stage.backgroundColor = 0x4488cc;
-
     this.game.physics.arcade.gravity.y = 100;
+
+
+
+    this.cloudBGGroup = game.add.group();
+    this.cloudBGTimer = game.time.events.loop(Phaser.Timer.SECOND*4, function() {
+        var myCloud = this.game.add.existing(
+            new Cloud(this)
+        );
+        myCloud.scale.setTo(.5);
+        this.cloudBGGroup.add(myCloud);
+    }, this);
 
     //Here we add an Player object to the stage. This is constructed using a prototype as defined below.
     this.game.add.existing(
         this.player = new Player(this.game, 150, centerPoint.y, this.game.input)
     );
 
-
     scoreText = this.game.add.text(320, 20, 'Word: ', { font: '16px Arial', fill: '#ffffff'});
 
-
     cursors = this.game.input.keyboard.createCursorKeys();
-
-
-
-
-
 
     //Just for good measure, i've added an fps timer.
     this.game.time.advancedTiming = true;
@@ -52,8 +54,16 @@ GameState.prototype.create = function() {
         var myLetter = this.game.add.existing(
             new Letter(this, this.player)
         );
-        console.log(myLetter.letter);
         this.textGroup.add(myLetter);
+    }, this);
+
+    this.cloudFGGroup = game.add.group();
+    this.cloudFGTimer = game.time.events.loop(Phaser.Timer.SECOND*4, function() {
+        var myCloud = this.game.add.existing(
+            new Cloud(this)
+        );
+        myCloud.alpha = .5;
+        this.cloudFGGroup.add(myCloud);
     }, this);
 }
 
@@ -91,6 +101,29 @@ var Player = function(game, x, y, target){
 	this.targetPos = {x:this.x, y:this.y};
 	//And an easing constant to smooth the movement
 	this.easer = .5;
+}
+
+var Cloud = function(game) {
+    // Set a location just off stage to spawn the letter
+    var x = stageSize.width + 25;
+    var y = Math.random()*stageSize.height;
+
+    // Spawn the container
+    Phaser.Sprite.call(this, game, x, y, 'cloud');
+    this.game.physics.enable(this, Phaser.Physics.ARCADE);
+    this.body.allowGravity = false;
+    this.body.gravity.setTo(0);
+
+    // Set a randomized number for scale and velocity of the letter (parallax)
+    var adj = Math.random()*3.5;
+    this.body.velocity.x = -100*adj;
+
+    // Hide the container
+    this.alpha = 100;
+
+    // If the character is out of bounds, kill it
+    this.checkWorldBounds = true;
+    this.events.onOutOfBounds.add(cloudOutOfBounds, this);
 }
 
 var Letter = function(game, player) {
@@ -144,6 +177,13 @@ function letterOutOfBounds(letter){
     letter.character.destroy();
     letter.kill();
 }
+
+function cloudOutOfBounds(cloud){
+    cloud.kill();
+}
+
+Cloud.prototype = Object.create(Phaser.Sprite.prototype);
+Cloud.prototype.constructor = Cloud;
 
 Letter.prototype = Object.create(Phaser.Sprite.prototype);
 Letter.prototype.constructor = Letter;
