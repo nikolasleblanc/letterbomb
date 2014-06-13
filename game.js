@@ -1,7 +1,10 @@
+
+
 var GameState = function(game){};
 
 var stageSize = {width:1136, height:640};
 var centerPoint = {x:stageSize.width/2, y:stageSize.height/2};
+var adj = 1;
 
 GameState.prototype.preload = function() {
  //We're preloading all the assets for the game to avoid any potential load-lag later.
@@ -19,14 +22,13 @@ GameState.prototype.create = function() {
     this.game.stage.backgroundColor = 0x4488cc;
     this.game.physics.arcade.gravity.y = 100;
 
-
-
     this.cloudBGGroup = game.add.group();
     this.cloudBGTimer = game.time.events.loop(Phaser.Timer.SECOND*4, function() {
         var myCloud = this.game.add.existing(
             new Cloud(this)
         );
-        myCloud.scale.setTo(.5);
+        myCloud.alpha = Math.random()*.5;
+        myCloud.scale.setTo(Math.random()*.5);
         this.cloudBGGroup.add(myCloud);
     }, this);
 
@@ -62,9 +64,17 @@ GameState.prototype.create = function() {
         var myCloud = this.game.add.existing(
             new Cloud(this)
         );
-        myCloud.alpha = .5;
+        myCloud.alpha = Math.random()*2;
+        myCloud.scale.setTo(Math.random()*2);
         this.cloudFGGroup.add(myCloud);
     }, this);
+
+    var random = Math.random();
+
+    this.speedTimer = game.time.events.loop(Phaser.Timer.SECOND*15, function(random) {
+        //adj = Math.random()*random*10;
+        console.log(adj);
+    }, this, random);
 }
 
 GameState.prototype.update = function() {
@@ -115,8 +125,7 @@ var Cloud = function(game) {
     this.body.gravity.setTo(0);
 
     // Set a randomized number for scale and velocity of the letter (parallax)
-    var adj = Math.random()*3.5;
-    this.body.velocity.x = -100*adj;
+    this.body.velocity.x = -100*adj*Math.random();
 
     // Hide the container
     this.alpha = 100;
@@ -149,8 +158,7 @@ var Letter = function(game, player) {
     this.body.gravity.setTo(0);
 
     // Set a randomized number for scale and velocity of the letter (parallax)
-    var adj = Math.random()*2.5;
-    this.body.velocity.x = -100*adj;
+    this.body.velocity.x = -100*Math.random();
 
     // Hide the container
     this.alpha = 0;
@@ -163,7 +171,8 @@ var Letter = function(game, player) {
     this.letter = letter;
 
     //Set a scale between 1 and 1.5 for some random sizes
-    this.character.scale.setTo(adj);
+    var someScale = Math.random()*1.5
+    this.character.scale.setTo(someScale);
 
     // If the character is out of bounds, kill it
     this.checkWorldBounds = true;
@@ -190,6 +199,8 @@ Letter.prototype.constructor = Letter;
 
 Letter.prototype.update = function(){
 
+    this.body.velocity.x = this.body.velocity.x*adj;
+
     // Get bounds for collision detection (why we needed a player reference)
     var boundsA = this.player.getBounds();
     var boundsB = this.getBounds();
@@ -209,6 +220,12 @@ Letter.prototype.update = function(){
     // Position the character with the letter
     this.character.x = this.x + this.width/2 - this.character.width/2;
     this.character.y = this.y + this.height/2 - this.character.height/2;
+}
+
+
+
+Cloud.prototype.update = function() {
+    this.body.velocity.x = this.body.velocity.x*adj;
 }
 
 // We give our player a type of Phaser.Sprite and assign it's constructor method.
